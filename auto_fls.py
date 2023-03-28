@@ -26,6 +26,12 @@ import re
 import speech_recognition as sr
 import soundfile
 import numpy as np
+import dotenv
+from dotenv import load_dotenv
+import os
+
+# Loading ENV variables
+load_dotenv()
 
 # Functions
 def jira_oauth():
@@ -41,11 +47,12 @@ def jira_connect():
     jira_connection = JIRA(
         #The first value will be your registered email in Jira,
         #The second value is your private API key.
-        basic_auth=('user@domain.com', 'APIKEY'),
+        api_key = os.getenv(api_key)
+        basic_auth=('user@domain.com',),
         # The server address will be your custom Jira domain
         server="https://yourdomain.atlassian.net"
     )
-    return jira_connection
+    return 
 
 
 def auto_fls():
