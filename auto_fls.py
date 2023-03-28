@@ -26,9 +26,10 @@ import re
 import speech_recognition as sr
 import soundfile
 import numpy as np
+import os
 import dotenv
 from dotenv import load_dotenv
-import os
+from os import environ
 
 # Loading ENV variables
 load_dotenv()
@@ -47,12 +48,13 @@ def jira_connect():
     jira_connection = JIRA(
         #The first value will be your registered email in Jira,
         #The second value is your private API key.
-        api_key = os.getenv(api_key)
-        basic_auth=('user@domain.com',),
+        key = os.getenv(api_key)
+        email = os.getenv(jira_login)
+        basic_auth=({email}, {key}),
         # The server address will be your custom Jira domain
         server="https://yourdomain.atlassian.net"
     )
-    return 
+    return jira_connection
 
 
 def auto_fls():
@@ -156,6 +158,11 @@ def wav_text():
     except Exception:
         print("Error: Empty voicemail message.")
 
+def testing():
+    key = environ.get(key=jira_login, default=None)
+    email = os.getenv('jira_login')
+    return print(key)
+
 
 if __name__ == "__main__":
-    auto_fls()
+    testing()
