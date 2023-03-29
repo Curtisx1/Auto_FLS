@@ -17,7 +17,7 @@ from os import environ
 class Auto_FLS:
     def __init__(self):
         # Loading ENV variables
-        load_dotenv()
+        load_dotenv(dotenv_path="C:/Users/clemke/Python/Auto_FLS-1/config.env")
 
     # Functions
     def jira_connect(self):
@@ -31,20 +31,17 @@ class Auto_FLS:
             basic_auth=(email, key),
             server=domain
         )
-        return print(jira_connection)
-    def wav_text(self):
-        data, samplerate = soundfile.read('voicemessage.wav')
-        soundfile.write('new.wav', data, samplerate, subtype='PCM_16')
-        r = sr.Recognizer()
-        hellow = sr.AudioFile('new.wav')
-        with hellow as source:
-            audio = r.record(source)
-        try:
-            s = r.recognize_google(audio, show_all = True, )
-            results = s['alternative'][0]
-            return results['transcript']
-        except Exception:
-            print("If something went wrong here, its not the auto_fls, its the wav conversion/text to speech.")
+        return jira_connection
+
+    def jira_oauth():
+        """Returns Oauth credentials for Jira. Variables retrieved from .env file"""
+        #The first value will be your registered email in Jira,
+        #The second value is your private API key.
+        email = os.getenv("JIRA_LOGIN")
+        key = os.getenv("API_KEY")
+        jira_connection = (email, key)
+        return jira_connection
+
 
     def auto_fls(self):
         """Creates Jira ticket from Outlook email"""
@@ -66,7 +63,7 @@ class Auto_FLS:
                 attachment = message.Attachments
                 attachment = attachment.Item(1)
                 file_name = str(attachment).lower()
-                path = Path("C:/Users/clemke/Python/Jira_Automation")
+                path = Path("C:/Users/clemke/Python/Auto_FLS-1")
                 attachment.SaveASFile(f'{path}\{file_name}')
                 if subject.startswith('Message from B'):
                     subject_cleaned = re.split('\s+', subject)
@@ -78,7 +75,6 @@ class Auto_FLS:
                     caller = (f'Caller Name: {subject_cleaned[2]}')
                     call_back = (f'Call back number/EXT: {subject_cleaned[-1]}')
                     branch = ("No branch given.")
-                jira_connection = self.jira_connect()
                 issue_dict = {
                     'project': {'key': 'ITDESK'},
                     'summary': f'VM @ {creation_time} | From: {sender}',
@@ -86,15 +82,15 @@ class Auto_FLS:
                     'issuetype': {'name': 'Service Request'},
                     'labels': ['Voicemail'],
                 }
-                new_issue = jira_connection.create_issue(fields=issue_dict)
-                url = f'https://mhcworkflow.atlassian.net/rest/api/3/issue/{new_issue}/attachments'
+                new_issue = self.jira_connection.create_issue(fields=issue_dict)
+                url = (f'{os.getenv("DOMAIN")}/rest/api/3/issue/{new_issue}/attachments')
                 headers = {
                     "X-Atlassian-Token": "no-check"
                 }
                 files = {
                     "file": ("voicemessage.wav", open("voicemessage.wav", "rb"))
                 }
-                response = requests.post(url, headers=headers, files=files, auth=self.jira_connect())
+                response = requests.post(url, headers=headers, files=files, auth=self.jira_oauth())
                 print(f'Ticket {new_issue} has been created.')
                 if message.UnRead:
                     message.UnRead = False
@@ -106,7 +102,22 @@ class Auto_FLS:
                 time.sleep(pause_timer)
                 continue
 
-            
+
+    def wav_text(self):
+        data, samplerate = soundfile.read('voicemessage.wav')
+        soundfile.write('new.wav', data, samplerate, subtype='PCM_16')
+        r = sr.Recognizer()
+        hellow = sr.AudioFile('new.wav')
+        with hellow as source:
+            audio = r.record(source)
+        try:
+            s = r.recognize_google(audio, show_all = True, )
+            results = s['alternative'][0]
+            return results['transcript']
+        except Exception:
+            print("If something went wrong here, its not the auto_fls, its the wav conversion/text to speech.")     
+
+
 if __name__ == "__main__":
     obj = Auto_FLS()
-    obj.jira_connect()
+    obj.auto_fls()
