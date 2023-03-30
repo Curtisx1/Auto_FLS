@@ -33,7 +33,7 @@ class Auto_FLS:
         )
         return jira_connection
 
-    def jira_oauth():
+    def jira_oauth(self):
         """Returns Oauth credentials for Jira. Variables retrieved from .env file"""
         #The first value will be your registered email in Jira,
         #The second value is your private API key.
@@ -82,15 +82,17 @@ class Auto_FLS:
                     'issuetype': {'name': 'Service Request'},
                     'labels': ['Voicemail'],
                 }
-                new_issue = self.jira_connection.create_issue(fields=issue_dict)
-                url = (f'{os.getenv("DOMAIN")}/rest/api/3/issue/{new_issue}/attachments')
+                jira_connection = self.jira_connect()
+                new_issue = jira_connection.create_issue(fields=issue_dict)
+                url = f'https://mhcworkflow.atlassian.net/rest/api/3/issue/{new_issue}/attachments'
                 headers = {
                     "X-Atlassian-Token": "no-check"
                 }
                 files = {
                     "file": ("voicemessage.wav", open("voicemessage.wav", "rb"))
                 }
-                response = requests.post(url, headers=headers, files=files, auth=self.jira_oauth())
+                auth = self.jira_oauth()
+                response = requests.post(url, headers=headers, files=files, auth=auth)
                 print(f'Ticket {new_issue} has been created.')
                 if message.UnRead:
                     message.UnRead = False
