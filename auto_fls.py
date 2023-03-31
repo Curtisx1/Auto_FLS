@@ -1,7 +1,6 @@
 # Imported Libraries
 import time
 from pathlib import Path
-import jira
 from jira import JIRA
 import requests
 from itertools import cycle
@@ -10,7 +9,6 @@ import re
 import speech_recognition as sr
 import soundfile
 import os
-import dotenv
 from dotenv import load_dotenv
 from os import environ
 import glob
