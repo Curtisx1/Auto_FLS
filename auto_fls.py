@@ -66,7 +66,7 @@ def auto_fls():
             attachment = attachment.Item(1)
             file_name = str(attachment).lower()
             path = os.path.dirname(os.path.realpath(__file__))
-            attachment.SaveASFile(f'{path}\{file_name}')
+            attachment.SaveASFile(f'{path}/{file_name}')
             if subject.startswith('Message from B'):
                 subject_cleaned = re.split('\s+', subject)
                 branch = (f'Branch Number: {subject_cleaned[2]}')
