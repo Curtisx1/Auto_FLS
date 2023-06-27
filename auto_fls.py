@@ -12,7 +12,9 @@ import os
 from dotenv import load_dotenv
 from os import environ
 import glob
+import logging
 
+logging.basicConfig(filename='errors.log', level=logging.DEBUG)
 # Setting up the enviroment variables. Looks for a .env file in the folder the .py file is saved in. Loads the first .env file found.
 dir_path = os.path.dirname(os.path.realpath(__file__))
 dotenv_files = glob.glob(os.path.join(dir_path, '*.env'))
@@ -28,10 +30,8 @@ def jira_connect():
     email = os.getenv("JIRA_LOGIN")
     key = os.getenv("API_KEY")
     domain = os.getenv("DOMAIN")
-    jira_connection = JIRA(
-        basic_auth=(email, key),
-        server=domain
-    )
+
+    jira_connection = JIRA(basic_auth=(email, key), server=domain, options={"verify": False})
     return jira_connection
 
 def jira_oauth():
@@ -92,7 +92,7 @@ def auto_fls():
             files = {
                 "file": ("voicemessage.wav", open("voicemessage.wav", "rb"))
             }
-            response = requests.post(url, headers=headers, files=files, auth=jira_oauth())
+            response = requests.post(url, headers=headers, files=files, auth=jira_oauth(), verify=False)
             print(f'Ticket {new_issue} has been created.')
             if message.UnRead:
                 message.UnRead = False
